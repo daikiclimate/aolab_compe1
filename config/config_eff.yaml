@@ -1,0 +1,10 @@
+device: "cuda:2"
+model: "efficientnet"
+model_type: "-b5"
+save_folder : "./weight/"
+lr : 0.01
+epochs : 20
+batch_size : 256
+type : "img"
+
+repeat: 5

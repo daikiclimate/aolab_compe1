@@ -1,0 +1,9 @@
+device: "cuda:2"
+model : "vgg19_bn"
+save_folder : "./weight/"
+lr : 0.01
+epochs : 30
+batch_size : 512
+type : "img"
+
+repeat: 5
