@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .feat_dataset import ImgDataset
-from .transform import return_img_transform
+from .transform import return_img_transform, return_test_img_transform
 
 
 def return_dataset(config, fold_num=0):
@@ -31,3 +31,14 @@ def return_dataloader(config, fold_num):
         num_workers=0,
     )
     return train_loader, valid_loader
+
+def return_testloader():
+    transforms = return_test_img_transform()
+    test_dataset = ImgDataset(mode="test", transform=transforms)
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset,
+        batch_size=1,
+        drop_last=False,
+        num_workers=0,
+        )
+    return test_loader

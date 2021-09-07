@@ -1,16 +1,17 @@
 import argparse
+import os
 import sys
 
 import numpy as np
 import torch
 import tqdm
-import utils
 import yaml
 from addict import Dict
 
 from dataset import return_data
-from evaluator import evaluator
+# from evaluator import evaluator
 from models import build_model
+import pandas as pd
 
 
 def get_arg():
@@ -23,34 +24,36 @@ def get_arg():
 
 def main():
     config = get_arg()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    _, test_set = return_data.return_dataset(config)
-    model = build_model.build_model(config)
-    model = model.to(device)
-    model.load_state_dict(torch.load("model.pth"))
-    model.eval()
+    device = config.device
+    test_set = return_data.return_testloader()
+    n_fold = 5
+    models = []
+    config.save_folder = os.path.join(config.save_folder, config.model)
+    for fold_num in range(n_fold):
+        model = build_model.build_model(config)
+        model = model.to(device)
+        weight = torch.load(f"{config.save_folder}/model_{str(fold_num)}.pth")
+        model.load_state_dict(weight)
+        model.eval()
+        models.append(model)
 
-    for batch_dataset, batch_label in test_set:
-        eval = evaluator()
-        labels = []
-        preds = []
-        for data, label in zip(batch_dataset, batch_label):
-            data = data.to(device)
-            output = model(data)
-            output = torch.argmax(output, axis=1)
-            preds.extend(output.cpu().detach().numpy())
-            labels.extend(np.array(label))
-        labels, preds = np.array(labels), np.array(preds)
-        from sklearn.metrics import confusion_matrix
+    preds = []
+    pbar = tqdm.tqdm(total=len(test_set))
+    for data in test_set:
+        data = data.to(device)
+        with torch.no_grad():
+           output = [m(data) for m in models]
+        output = torch.cat(output)
+        output = torch.mean(output, 0).unsqueeze(0)
+        output = torch.argmax(output, axis=1)
+        preds.extend(output.cpu().detach().numpy())
+        pbar.update(1)
 
-        name = utils.return_labels()
-        val_mat = confusion_matrix(labels, preds)
-        count_labels(labels)
-        count_labels(preds)
-        # eval.set_data(labels, preds)
-        # eval.print_eval(["accuracy"])
-        # print(name)
-        # print(val_mat)
+    submit = pd.DataFrame(columns=["image_id", "labels"])
+    submit["image_id"] = list(range(500))
+    submit["labels"] = preds
+    submit.to_csv(f"submits/submition_1.csv", index=False)
+    print(submit["labels"].value_counts())
 
 
 def count_labels(labels):

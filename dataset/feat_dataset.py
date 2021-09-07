@@ -44,16 +44,22 @@ class ImgDataset(data.Dataset):
                 self._labels = self._labels[self._labels.fold == fold_num]
 
         else:
-            self.data_dir = self._data_dir / Path("test")
+            self._data_dir = self._data_dir / Path("test")
+
         self._transform = transform
         self._mode = mode
 
     def __getitem__(self, idx):
-        img_name = self._labels.img_name.values[idx]
+        if self._mode == "test":
+            img_name = idx
+        else:
+            img_name = self._labels.img_name.values[idx]
+
         image_dir = self._data_dir / Path(str(img_name) + ".jpg")
         image = pil_loader(image_dir)
         if self._transform:
             image = self._transform(image)
+
         if self._mode == "train" or self._mode == "valid":
             label = torch.tensor(self._labels.labels.values[idx])
             return image, label
