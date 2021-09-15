@@ -187,5 +187,5 @@ def test(model, dataset, config, device, best_eval=0, th=0.6):
 if __name__ == "__main__":
     path = "config/config_tcn_sweep.yaml"
     for i in range(5):
-        main(fold_num = i)
+        main(fold_num=i)
     # sweep(path)

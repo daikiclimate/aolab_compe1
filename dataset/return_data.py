@@ -32,6 +32,7 @@ def return_dataloader(config, fold_num):
     )
     return train_loader, valid_loader
 
+
 def return_testloader():
     transforms = return_test_img_transform()
     test_dataset = ImgDataset(mode="test", transform=transforms)
@@ -40,5 +41,5 @@ def return_testloader():
         batch_size=1,
         drop_last=False,
         num_workers=0,
-        )
+    )
     return test_loader

@@ -3,6 +3,7 @@ import os
 import sys
 
 import numpy as np
+import pandas as pd
 import torch
 import tqdm
 import yaml
@@ -11,7 +12,6 @@ from addict import Dict
 from dataset import return_data
 # from evaluator import evaluator
 from models import build_model
-import pandas as pd
 
 
 def get_arg():
@@ -42,7 +42,7 @@ def main():
     for data in test_set:
         data = data.to(device)
         with torch.no_grad():
-           output = [m(data) for m in models]
+            output = [m(data) for m in models]
         output = torch.cat(output)
         output = torch.mean(output, 0).unsqueeze(0)
         output = torch.argmax(output, axis=1)
